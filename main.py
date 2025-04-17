@@ -45,17 +45,77 @@ spark = SparkSession.builder.master('local[*]').getOrCreate()
 
 # df3.show()
 
-schema = StructType([
-    StructField("id",IntegerType(),nullable=True),
-    StructField("name",StringType(),nullable=True),
-    StructField("referee_id",IntegerType(),nullable=True)
+# schema = StructType([
+#     StructField("id",IntegerType(),nullable=True),
+#     StructField("name",StringType(),nullable=True),
+#     StructField("referee_id",IntegerType(),nullable=True)
 
+# ])
+
+# data = [(1,"Will",None),(2,"Jane",None),(3,"Alex",2),(4,"Bill",None),(5,"Zack",1),(6,"Mark",2)]
+
+# s3 = spark.createDataFrame(data, schema)
+
+# s3_1 = s3.filter((col('referee_id') != 2) | (col('referee_id').isNull())).select('id','name')
+
+# s3_1.show()
+
+
+salesperson_data = [
+    (1, "John", 100000, 6, "4/1/2006"),
+    (2, "Amy", 12000, 5, "5/1/2010"),
+    (3, "Mark", 65000, 12, "12/25/2008"),
+    (4, "Pam", 25000, 25, "1/1/2005"),
+    (5, "Alex", 5000, 10, "2/3/2007")
+]
+
+salesperson_schema = StructType([
+    StructField("sales_id", IntegerType(), True),
+    StructField("name", StringType(), True),
+    StructField("salary", IntegerType(), True),
+    StructField("commission_rate", IntegerType(), True),
+    StructField("hire_date", StringType(), True)  # Could use DateType() if parsed properly
 ])
 
-data = [(1,"Will",None),(2,"Jane",None),(3,"Alex",2),(4,"Bill",None),(5,"Zack",1),(6,"Mark",2)]
+salesperson_df = spark.createDataFrame(data=salesperson_data, schema=salesperson_schema)
 
-s3 = spark.createDataFrame(data, schema)
+company_data = [
+    (1, "RED", "Boston"),
+    (2, "ORANGE", "New York"),
+    (3, "YELLOW", "Boston"),
+    (4, "GREEN", "Austin")
+]
 
-s3_1 = s3.filter((col('referee_id') != 2) | (col('referee_id').isNull())).select('id','name')
+company_schema = StructType([
+    StructField("com_id", IntegerType(), True),
+    StructField("name", StringType(), True),
+    StructField("city", StringType(), True)
+])
 
-s3_1.show()
+company_df = spark.createDataFrame(data=company_data, schema=company_schema)
+
+
+orders_data = [
+    (1, "1/1/2014", 3, 4, 10000),
+    (2, "2/1/2014", 4, 5, 5000),
+    (3, "3/1/2014", 1, 1, 50000),
+    (4, "4/1/2014", 1, 4, 25000)
+]
+
+orders_schema = StructType([
+    StructField("order_id", IntegerType(), True),
+    StructField("order_date", StringType(), True),  # Could use DateType() if parsed properly
+    StructField("com_id", IntegerType(), True),
+    StructField("sales_id", IntegerType(), True),
+    StructField("amount", IntegerType(), True)
+])
+
+orders_df = spark.createDataFrame(data=orders_data, schema=orders_schema)
+
+resu1  = orders_df.join(company_df, orders_df.com_id == company_df.com_id, how='inner') \
+    .filter(orders_df.com_id == 1) \
+        .select(col('sales_id'))
+
+final_res = resu1.join(salesperson_df,resu1.sales_id == salesperson_df.sales_id,how='left_anti')
+
+final_res.show()
