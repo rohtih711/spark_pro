@@ -38,20 +38,6 @@ res3 = res2.filter(col('rank') == 1).select(col('values'),col('count').alias('nu
 
 res3.show()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # schema = StructType([
 #     StructField("person_id", IntegerType(), True),
 #     StructField("person_name", StringType(), True),

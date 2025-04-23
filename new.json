@@ -1,0 +1,29 @@
+[
+  {
+  "id": 1,
+  "name": "Alice",
+  "department": "HR",
+  "address": {
+  "city": "New York",
+  "state": "NY"
+  }
+  },
+  {
+  "id": 2,
+  "name": "Bob",
+  "department": "IT",
+  "address": {
+  "city": "San Francisco",
+  "state": "CA"
+  }
+  },
+  {
+  "id": 3,
+  "name": "Charlie",
+  "department": "Finance",
+  "address": {
+  "city": "Chicago",
+  "state": "IL"
+  }
+  }
+ ]
