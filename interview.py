@@ -5,47 +5,59 @@ from pyspark.sql.functions import col
 spark = SparkSession.builder.appName("EmployeeData").getOrCreate()
 
 # JSON-like data (Python list of dicts)
-data = [
-    {
-        "id": 1,
-        "name": "Alice",
-        "department": "HR",
-        "address": {
-            "city": "New York",
-            "state": "NY"
-        }
-    },
-    {
-        "id": 2,
-        "name": "Bob",
-        "department": "IT",
-        "address": {
-            "city": "San Francisco",
-            "state": "CA"
-        }
-    },
-    {
-        "id": 3,
-        "name": "Charlie",
-        "department": "Finance",
-        "address": {
-            "city": "Chicago",
-            "state": "IL"
-        }
-    }
-]
+# data = [
+#     {
+#         "id": 1,
+#         "name": "Alice",
+#         "department": "HR",
+#         "address": {
+#             "city": "New York",
+#             "state": "NY"
+#         }
+#     },
+#     {
+#         "id": 2,
+#         "name": "Bob",
+#         "department": "IT",
+#         "address": {
+#             "city": "San Francisco",
+#             "state": "CA"
+#         }
+#     },
+#     {
+#         "id": 3,
+#         "name": "Charlie",
+#         "department": "Finance",
+#         "address": {
+#             "city": "Chicago",
+#             "state": "IL"
+#         }
+#     }
+# ]
 
-df = spark.createDataFrame(data)
+# df = spark.createDataFrame(data)
 
 
-df.printSchema()
-res1 = df.select('id','name','department',col('address.city').alias('city'),col('address.state').alias('state'))
+# df.printSchema()
+# res1 = df.select('id','name','department',col('address.city').alias('city'),col('address.state').alias('state'))
 
-re2 = res1.repartition(1)
+# re2 = res1.repartition(1)
+
+
+# try:
+#     re2.write.format('parquet').mode('overwrite').save('newdata.parquet')
+#     print("done")
+# except Exception as e:
+#     print(e)
+
+
+
+df  = spark.read.format('csv').option('header','true').load('/Users/rohithb/Desktop/new_psark/orders.csv')
+df2 = df.repartition(12)
 
 
 try:
-    re2.write.format('parquet').mode('overwrite').save('newdata.parquet')
-    print("done")
+     df2.write.format('csv').mode('overwrite').partitionBy('order_status').save('/Users/rohithb/Desktop/new_psark/partitioned_orders')
+     print('done')
 except Exception as e:
-    print(e)
+        print(e)
