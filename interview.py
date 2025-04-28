@@ -53,11 +53,11 @@ spark = SparkSession.builder.appName("EmployeeData").getOrCreate()
 
 
 df  = spark.read.format('csv').option('header','true').load('/Users/rohithb/Desktop/new_psark/orders.csv')
-df2 = df.repartition(12)
-
+df2 = df.repartition(1)
 
 try:
-     df2.write.format('csv').mode('overwrite').partitionBy('order_status').save('/Users/rohithb/Desktop/new_psark/partitioned_orders')
-     print('done')
+     df2.write.format('parquet').mode('overwrite').bucketBy(4,'Order ID').save('newdata.parquet')
 except Exception as e:
-        print(e)
+     print(e)
+
+
