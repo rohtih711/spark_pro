@@ -1,11 +1,20 @@
-import duckdb
-import pandas as pd
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
 
-conn = duckdb.connect()
+client_credentials_manager = SpotifyClientCredentials(
+    client_id='88a9b3c2af894fc9879249c4296bb54e', 
+    client_secret='9c83201c73754bcb99c84143047209dd' )
 
-df = conn.execute("""
-    SELECT * FROM read_csv_auto('/Users/rohithb/Desktop/new_psark/orders.csv')
-    LIMIT 12
-""").df()
+sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
-print(df)
+playlist_link = 'https://open.spotify.com/playlist/37i9dQZEVXbNG2KDcFcKOF?si=1333723a6eff4b7f&nd=1&dlsi=f798f9be51c54554'
+
+playlist_link_URI = playlist_link.split('/')[-1].split('?')[0]
+
+data = sp.playlist_tracks(playlist_link_URI)
+
+print(data)
+
+
+
+
