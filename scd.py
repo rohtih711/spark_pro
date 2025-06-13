@@ -16,6 +16,8 @@ customer_target_schema = "customerID long, FirstName string, LastName string, Em
 
 customerdf = spark.read.format("csv").option("header", "true").schema(costomers_source_schema).load("/Users/rohithb/Desktop/new_psark/orders.csv")
 
+#customerdf.show()
+
 winddow = Window.orderBy("customerID")
 
 enhanced_customer_df = customerdf \
@@ -37,3 +39,37 @@ final_df = spark.read.format("csv").option("header", "true").schema(customer_tar
 max_sk = final_df.agg({"customer_skey": "max"}).collect()[0][0] 
 
 print(max_sk)
+
+active_customers_tagged_df = final_df.where(col("active_flag") == True) 
+
+inactive_customers_tagged_df = final_df.where(col("active_flag") == False)
+
+join_df = active_customers_tagged_df.join(customerdf,'customerID','full_outer')
+
+def column_rename(df,suffix,append):
+    if append:
+        new_column_names = list(map(lambda x: x+ suffix, df.columns))
+    else:   
+        new_column_names = list(map(lambda x: x.replace(suffix,""), df.columns))
+    
+    return df.toDF(*new_column_names)
+
+def get_hash(df,key_list):
+    columns = [col(column) for column in key_list]
+
+    if columns:
+        return df.withColumn("hash_md5", md5(concat_ws("", *columns)))
+    else:
+        return df.withColumn("hash_md5", md5(lit(1)))
+
+active_customers_tagged_df_hash = column_rename(get_hash(active_customers_tagged_df,slowly_changing_cols),suffix="_target",append=True)
+
+customerdf_hash = column_rename(get_hash(customerdf,slowly_changing_cols),suffix="_source",append=True)
+
+merged_df = active_customers_tagged_df_hash.join(customerdf_hash,col('customerID_source') == col('customerID_target'),'full_outer') \
+.withColumn("Action", when(col("hash_md5_source") == col("hash_md5_target"), "NoChange") \
+            .when(col("customerID_source").isNull(), 'DETETE') \
+            .when(col("customerID_target").isNull(), 'INSERT') \
+            .otherwise('UPDATE')) \
+            
+merged_df.show()
